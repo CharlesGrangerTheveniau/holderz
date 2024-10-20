@@ -1,8 +1,8 @@
 
 <script lang="ts">
 	import { page } from "$app/stores";
+    import { getExchanges, getPrice } from "$lib/coin-api-service.js";
     import { ConicGradient, type ConicStop } from "@skeletonlabs/skeleton";
-    import { getExchanges, getPrice } from "./+server.js";
 
 
     const conicStops: ConicStop[] = [
