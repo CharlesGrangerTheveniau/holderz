@@ -94,16 +94,16 @@
 						<Avatar src="{getAvatar(session)}" width="w-full" rounded="rounded-full" action={filter} actionParams="#BlueNight"/>
 					</button>
 					
-					<!-- <button class="btn btn-sm variant-ghost-secondary" on:click={ async () => { await supabase.auth.signOut() } }>Logout</button> -->
+					<button class="btn btn-sm variant-ghost-secondary" on:click={ async () => { await supabase.auth.signOut() } }>Logout</button>
 				{/if}
 				<LightSwitch />
 			
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
-	<svelte:fragment slot="sidebarLeft">
+	<!-- <svelte:fragment slot="sidebarLeft">
 		<Sidebar session={session} supabase={supabase} class="hidden lg:grid lg:w-[360px] overflow-hidden" />
-	</svelte:fragment>
+	</svelte:fragment> -->
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>

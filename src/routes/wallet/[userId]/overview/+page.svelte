@@ -28,6 +28,7 @@
            walletInfo = walletData[0]
 
            metadata = await evaluateWallet(walletInfo.id, supabase)
+           //metadata = null
 
            console.log(metadata)
 
@@ -49,11 +50,10 @@
 </script>
 
 {#if loaded}
-    <div class="h-screen flex justify-center items-center">
-        <div class="grid grid-cols-10 grid-rows-10 gap-4 mx-[300px]">
-            <div class="col-span-2 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Nav</div>
-            <div class="col-span-6 row-span-2 border-surface-500/30 rounded-md">
-                <header class="doc-shell-header gap-8 ml-10">
+    <div class="h-screen flex justify-center items-start sm: p-6 md:p-12 xl:p-24">
+        <div class="grid grid-cols-10 grid-rows-10 gap-4">
+            <div class="b-card p-4 col-span-10 lg:col-span-7 row-span-2 border-surface-500/30 rounded-md">
+                <header class="doc-shell-header gap-8">
                     <section class="space-y-4 mb-4">
                         <span class="badge variant-soft translate-y-1">Overview</span>
                         <h1>Welcome {walletInfo.first_name} 👋</h1>
@@ -74,14 +74,14 @@
                     </section>
                 </header>
             </div>
-            <div class="col-span-2 row-span-2 variant-glass-surface border-surface-500/30 rounded-md content-center p-10 text-center">
+            <div class="b-card p-4 col-span-10 lg:col-span-3 row-span-2 variant-glass-surface border-surface-500/30 rounded-md content-center p-10 text-center">
                 <span>Your portfolio value is</span>
                 <span>{metadata.totalWalletValue.eur}</span>
             </div>
-            <div class="col-span-10 row-span-4 variant-glass-surface border-surface-500/30 rounded-md">Chart</div>
-            <div class="col-span-10 row-span-1 variant-glass-surface border-surface-500/30 rounded-md">Filters</div>
-            <div class="col-span-6 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Latest transactions</div>
-            <div class="col-span-4 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Actions</div>
+            <div class="b-card p-4 col-span-10 row-span-4 variant-glass-surface border-surface-500/30 rounded-md">Chart</div>
+            <div class="b-card p-4 col-span-10 row-span-1 variant-glass-surface border-surface-500/30 rounded-md">Filters</div>
+            <div class="b-card p-4 col-span-10 lg:col-span-6 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Latest transactions</div>
+            <div class="b-card p-4 col-span-10 lg:col-span-4 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Actions</div>
             
         </div>
         
