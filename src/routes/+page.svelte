@@ -6,12 +6,6 @@
 	let { supabase, session } = data
 	$: ({ supabase, session } = data)
 
-	console.log(session?.user)
-
-	if (session) {
-		goto(`/wallet/${session?.user.id}`)
-	}
-	
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
