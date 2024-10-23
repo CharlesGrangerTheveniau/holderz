@@ -2,6 +2,7 @@
     import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
     import { getAvatar } from '$lib';
+    import type { DrawerSettings } from '@skeletonlabs/skeleton';
 
 	import { AppRail, AppRailAnchor, AppRailTile, getDrawerStore, Avatar } from '@skeletonlabs/skeleton';
 
@@ -16,6 +17,20 @@
         { label: 'Accounts', target: "accounts", icon: "layer-group"},
         { label: 'Transactions', target: "transactions", icon: "arrow-right-arrow-left"}
     ]
+
+	function drawerOpen(): void {
+		const s: DrawerSettings = { 
+            id: 'settings', 
+            meta: { session, supabase}, 
+            position: 'right',
+            bgDrawer: 'variant-glass-surface',
+			bgBackdrop: 'bg-surface-backdrop-token',
+			width: 'w-[280px] md:w-[480px]',
+			padding: 'p-2',
+			rounded: 'rounded-md'
+        };
+		drawerStore.open(s);
+	}
 
     function navigate(target: string) {
         console.log(`going to /wallet/${session?.user.id}/${target}`)
@@ -37,15 +52,29 @@
 
 </script>
 
-{#each menuNavLinks as { target, label, icon }}
-    <button class="btn bg-initial w-full flex flex-col nav-button {listboxItemActive(target)}" 
-            data-sveltekit-preload-data="hover"
-            on:click={() =>  navigate(target) }>
+<div class="nav flex flex-row justify-between">
+    <div class="flex flex-row bg-surface-400 border-surface-500/30 variant-glass-surface">
+        {#each menuNavLinks as { target, label, icon }}
+            <button class="btn bg-initial w-full flex flex-col nav-button {listboxItemActive(target)}" 
+                    data-sveltekit-preload-data="hover"
+                    on:click={() => navigate(target) }>
 
-        <i class="fa-solid fa-{icon}"></i>
-        <!-- <span class="{listboxShowLabel}">{label}</span> -->
-    </button>
-{/each}
+                <i class="fa-solid fa-{icon}"></i>
+                <span class="text-xs mt-2 hidden">{label}</span>
+            </button>
+        {/each}
+    </div>
+    <div class="flex flex-row bg-surface-400 border-surface-500/30 variant-glass-surface">
+        <button class="btn bg-initial w-full flex flex-col nav-button" 
+                data-sveltekit-preload-data="hover"
+                on:click={() => drawerOpen()}>
+
+            <i class="fa-solid fa-gear hover:fa-spin"></i>
+            <span class="text-xs mt-2 hidden">Settings</span>
+        </button>
+    </div>
+</div>
+
 
 
 <style lang="postcss">

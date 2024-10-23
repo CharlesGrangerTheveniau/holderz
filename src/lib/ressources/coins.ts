@@ -1,4 +1,4 @@
-import { getCoinData, type Price } from "../../routes/api/getPrices/+server";
+import { type Price } from "../../routes/api/getPrices/+server";
 
 // Define the type of Coin object
 export interface CoinIdentificators {
@@ -7,7 +7,7 @@ export interface CoinIdentificators {
   name: string;
 }
 
-const coinIds: CoinIdentificators[] = [
+export const coinIds: CoinIdentificators[] = [
     {
       "id": "01coin",
       "symbol": "zoc",
@@ -74854,6 +74854,33 @@ export interface PriceChanges {
   percentage1y: number
 }
 
+/**
+ * Fetch coin data from the external API.
+ * 
+ * @param {string} coinId 
+ * @returns {Promise<any>}
+ */
+export async function getCoinData(coinId: string) {
+  const apiUrl = `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true'`;
+
+  const options = {
+     method: 'GET',
+     headers: {
+        Accept: 'application/json',
+        'x-cg-demo-api-key': import.meta.env.VITE_CG_API_KEY
+     }
+  };
+
+  try {
+     const response = await fetch(apiUrl, options);
+     const data = await response.json();
+     return data;
+  } catch (error) {
+     console.error('Error fetching prices:', error);
+     return {};
+  }
+}
+
 export async function getCoinById(id: string): Promise<CoinData | undefined> {
   const identificators = coinIds.find(c => c.id == id) ?? undefined
 
@@ -74896,5 +74923,3 @@ export function fetchBySupportedCurrencies(object: any): Price {
     return result;
   }, {} as Price);
 }
-
-

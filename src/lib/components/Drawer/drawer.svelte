@@ -4,9 +4,13 @@
 
 	const drawerStore = getDrawerStore();
 
-	$: classesDrawer = $drawerStore.id === 'doc-sidenav' ? 'lg:hidden' : '';
+	$: classesDrawer = $drawerStore.id === 'profile'
 </script>
 
-<Drawer class={classesDrawer}>
-	<Sidebar embedded={true} session={$drawerStore.meta.session} supabase={$drawerStore.meta.supabase}/>
+<Drawer>
+	{#if ($drawerStore.id === 'settings')}
+		<div>This is a profile drawer</div>
+	{:else}
+		<Sidebar embedded={true} session={$drawerStore.meta.session} supabase={$drawerStore.meta.supabase}/>
+	{/if}
 </Drawer>

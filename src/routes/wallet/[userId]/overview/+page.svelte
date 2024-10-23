@@ -1,8 +1,10 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { ConicGradient, type ConicStop } from '@skeletonlabs/skeleton';
-    import { evaluateWallet, loadTransactions, type WalletData } from '../../../api/getPrices/+server.js';
-    import type { Wallet } from '$lib/types/data-types.js';
+    import { type Transaction, type WalletMetadata } from '../../../api/getPrices/+server.js';
+
+    import Chart from '$lib/components/Charts/Chart.svelte';
+    import type { SupabaseClient } from '@supabase/supabase-js';
 
     export let data;
     let { supabase, session } = data
@@ -11,36 +13,54 @@
     console.log(data.session?.user.id)
 
     let loaded = false;
-    let walletInfo: any;
-    let metadata: any
+    let walletInfo: any = null
+    let metadata: any;
+    
+    async function loadTransactions(walletId: string, supabase: SupabaseClient): Promise<Transaction[] | null> {
+        const { data: transactions, error: profileError } = await supabase
+            .from("transaction")
+            .select("*")
+            .eq('wallet_id', walletId);
+
+        return transactions;
+    }
     
     page.subscribe( async () => {
        
-       const { data: walletData, error: profileError } = await supabase
+        const { data: walletData, error: profileError } = await supabase
            .from("wallet")
            .select("*")
            .eq('email', session?.user.email)
            .eq('user_id', session?.user.id)
-
        
-       if (walletData && walletData.length > 0) {
-           console.log("wallet found")
-           walletInfo = walletData[0]
+        if (walletData && walletData.length > 0) {
+            console.log("wallet found");
+            walletInfo = walletData[0];
 
-           metadata = await evaluateWallet(walletInfo.id, supabase)
-           //metadata = null
+            const transactions = await loadTransactions(walletInfo.id, supabase); // Await the transactions
 
-           console.log(metadata)
+            if (transactions && transactions.length > 0) {
+                // Pass the transactions in the body of the fetch request
+                let metadata = await fetch("/api/getPrices/", {
+                    method: "POST", // Use POST to send data in the body
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ transactions }), // Pass transactions as JSON
+                });
 
-           if (walletInfo && metadata) {
-            loaded = true
-           }
-           
-       } else {
-           console.log("NO PROFILE")
-       }
+                const metadataResponse = await metadata.json(); // Await the response
 
-   })
+                if (walletInfo && metadataResponse) {
+                    metadata = metadataResponse.data
+                    console.log(metadata)
+                    loaded = true;
+                }
+            } else {
+                console.log("No transactions found");
+            }
+        }
+    })
 
     const conicStops: ConicStop[] = [
         { color: 'transparent', start: 0, end: 1 },
@@ -50,8 +70,8 @@
 </script>
 
 {#if loaded}
-    <div class="h-screen flex justify-center items-start sm: p-6 md:p-12 xl:p-24">
-        <div class="grid grid-cols-10 grid-rows-10 gap-4">
+    <div class="h-screen w-full flex justify-center items-start">
+        <div class="grid w-full grid-cols-10 grid-rows-10 gap-4 auto-rows-min">
             <div class="b-card p-4 col-span-10 lg:col-span-7 row-span-2 border-surface-500/30 rounded-md">
                 <header class="doc-shell-header gap-8">
                     <section class="space-y-4 mb-4">
@@ -76,9 +96,17 @@
             </div>
             <div class="b-card p-4 col-span-10 lg:col-span-3 row-span-2 variant-glass-surface border-surface-500/30 rounded-md content-center p-10 text-center">
                 <span>Your portfolio value is</span>
-                <span>{metadata.totalWalletValue.eur}</span>
+                <span>{metadata?.walletValueExcerpt?.today?.eur}</span>
             </div>
-            <div class="b-card p-4 col-span-10 row-span-4 variant-glass-surface border-surface-500/30 rounded-md">Chart</div>
+            <div class="b-card p-4 col-span-10 row-span-4 variant-glass-surface border-surface-500/30 rounded-md">
+                {#if metadata}
+                    <Chart mode={'wallet'} metadata={metadata}/>
+                {:else}
+                    <div class="flex justify-center items-center w-full h-full">
+                        <ConicGradient stops={conicStops} spin>Loading data</ConicGradient>
+                    </div>
+                {/if}
+            </div>
             <div class="b-card p-4 col-span-10 row-span-1 variant-glass-surface border-surface-500/30 rounded-md">Filters</div>
             <div class="b-card p-4 col-span-10 lg:col-span-6 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Latest transactions</div>
             <div class="b-card p-4 col-span-10 lg:col-span-4 row-span-2 variant-glass-surface border-surface-500/30 rounded-md">Actions</div>
