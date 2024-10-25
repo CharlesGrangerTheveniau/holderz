@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { AppShell, AppBar, LightSwitch, Avatar, filter, BlueNight } from '@skeletonlabs/skeleton';
+	import { AppShell, AppBar, LightSwitch, Avatar, filter, BlueNight, initializeStores } from '@skeletonlabs/skeleton';
+	
 
 	// Highlight JS
 	import hljs from 'highlight.js/lib/core';
@@ -19,28 +20,26 @@
 
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
+	import { storePopup, getDrawerStore } from '@skeletonlabs/skeleton';
+	import type { DrawerSettings } from '@skeletonlabs/skeleton';
     import { goto, invalidateAll } from '$app/navigation';
+    import { page } from '$app/stores';
+    import Sidebar from '$lib/components/Sidebar/Sidebar.svelte';
+    import { getAvatar } from '$lib';
+    import Drawer from '$lib/components/Drawer/drawer.svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+
+	initializeStores();
 
 	export let data;
 
     let { supabase, session } = data
     $: ({ supabase, session } = data)
 
-	console.log(session?.user)
-
-	function getAvatar() {
-		let avatar_src;
-		let identities = session?.user.identities
-		if(identities) {
-			identities.forEach(i => {
-				if (i.provider == 'google') {
-					avatar_src = i.identity_data?.avatar_url
-				}
-			})
-		}
-		return avatar_src
+	const drawerStore = getDrawerStore();
+	function drawerOpen(): void {
+		const s: DrawerSettings = { id: 'doc-sidenav', meta: { session, supabase} };
+		drawerStore.open(s);
 	}
 
 	supabase.auth.onAuthStateChange(async (event, session) => {
@@ -54,32 +53,45 @@
 			invalidateAll()
 		}
 	})
+
+	function matchPathWhitelist(pageUrlPath: string): boolean {
+		// If homepage route
+		if (pageUrlPath === '/') return true;
+		if (pageUrlPath.includes('login')) return true
+		// If any blog route
+		return false;
+	}
+
+
+	$: slotSidebarLeft = matchPathWhitelist($page.url.pathname) ? 'w-0' : 'bg-surface-50-900-token lg:w-auto';
 </script>
 
+<Drawer/>
 <!-- App Shell -->
-<AppShell>
+<AppShell {slotSidebarLeft}>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
 		<AppBar>
 			<svelte:fragment slot="lead">
 				<div class="flex flex-row gap-5">
-					<a class="btn-icon btn-icon-md text-white bg-gradient-to-br variant-gradient-primary-secondary"
-					href="/"
-					rel="noreferrer">H</a>
-					{#if session !== null } 
-						<a class="btn btn-sm text-white bg-gradient-to-br variant-gradient-primary-secondary rounded-lg w-36"
-						href="/wallet/{session.user.id}"
-						rel="noreferrer">My wallet</a>
+					{#if session !== null}
+						<button on:click={drawerOpen} class="btn-icon btn-icon-md lg:!hidden">
+							<i class="fa-solid fa-bars text-xl"></i>
+						</button>
 					{/if}
+					<button on:click={() => goto("/")} class="btn-icon btn-icon-sm text-white bg-gradient-to-br variant-gradient-primary-secondary">
+						H
+					</button>
 				</div>
 				
 			</svelte:fragment>
+			
 			<svelte:fragment slot="trail">
 				{#if session == null }
 					<button class="btn btn-sm variant-ghost-primary" on:click={() => goto("/login")}>Login</button>
 				{:else}
-					<button class="btn-icon btn-icon-md">
-						<Avatar src="{getAvatar()}" width="w-full" rounded="rounded-full" action={filter} actionParams="#BlueNight"/>
+					<button class="btn-icon btn-icon-sm" on:click={() => goto("/wallet/{session.user.id}/overview")}>
+						<Avatar src="{getAvatar(session)}" width="w-full" rounded="rounded-full" action={filter} actionParams="#BlueNight"/>
 					</button>
 					
 					<button class="btn btn-sm variant-ghost-secondary" on:click={ async () => { await supabase.auth.signOut() } }>Logout</button>
@@ -89,6 +101,9 @@
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
+	<!-- <svelte:fragment slot="sidebarLeft">
+		<Sidebar session={session} supabase={supabase} class="hidden lg:grid lg:w-[360px] overflow-hidden" />
+	</svelte:fragment> -->
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>

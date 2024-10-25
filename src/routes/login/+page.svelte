@@ -3,6 +3,7 @@
     import { Auth } from '@supabase/auth-ui-svelte';
     import { ThemeSupa } from '@supabase/auth-ui-shared';
 	import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
 
     let { supabase, session } = data
     $: ({ supabase, session } = data)
@@ -10,9 +11,11 @@
     console.log(supabase)
     console.log(session)
 
-    $: if(session) {
-        goto("/")
-    }
+    page.subscribe( async () => {
+        if(session) {
+            goto("/wallet/${session.user.id}/overview")
+        }
+    })
 </script>
 
 <div class="hero min-h-screen flex justify-center items-center">
